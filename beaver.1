@@ -1,0 +1,30 @@
+.\"Created with GNOME Manpages Editor
+.\"http://sourceforge.net/projects/gmanedit2
+
+.\"Replace <program> with the program name, x with the Section Number
+.TH  beaver 0.1 "2014.07.14" "" "User Commands"
+
+.SH NAME
+beaver \- program for pooling photos taken by different friends at a same event to have them chronologically ordered in your archive folder. To save space, resizing photos to a lower resolution is possible (720p, 1080p, 4K, 8K).
+
+..SH SYNOPSIS
+.B beaver
+.RI [ options ]
+.br
+
+.SH DESCRIPTION
+Forthcoming...
+
+.SH OPTIONS
+.IP \fB\-d\fP or \fB\--dir\fP
+Specify the directory name where to export photo.
+.IP \fB\-p\fP or \fB\--prefix\fP
+Specify a label to prefix photo names. If not set the folder name is used.
+
+.SH NOTES
+Currently the command doesn't accept spaces in names (directories and photos). Please remove all spaces in names before running the command.
+
+.SH EXAMPLE
+cd /amazingTripWithFriends
+beaver -p myNiceTrip -v
+beaver -p myNiceTrip -v -r 4K

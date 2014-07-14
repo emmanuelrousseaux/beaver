@@ -1,0 +1,342 @@
+#!/bin/bash
+
+# http://askubuntu.com/questions/346011/how-to-rename-multiple-photos-and-videos-based-on-exif-data
+
+#FIXES
+# - subfolders cannot have spaces in name
+
+name="friends-photos-merge"
+version="0.0.2"
+dir_default="$name-export"
+prefix_default=""
+sep_default="-"
+img_types_default=".jpg$"
+ext_default='jpg'
+quiet=0
+verbose=0
+resize=''
+resize_convert=''
+
+working_dir="$(pwd)"
+
+usage () {
+    echo
+    echo "This is $name version $version."
+    echo
+    echo "Usage:"
+    echo "      -d or --dir            Specify the directory name where to export photo."
+    echo "      -p or --prefix         Specify a label to prefix photo names. If not set the folder name is used."
+    echo "      -s or --separator      Specify the separator to use between the prefix and the date in photo names. Default is '$sep_default'."
+    echo "      -i or --img            Specify a perl pattern to match image extensions. Default is '$img_types_default'."
+    echo "      -r or --resize         Resize photo to a given resolution, for example '1920x1080'."
+		echo "      -e or --extension      Extension to use for naming photos. Default is 'jpg'."
+    echo "      -q or --quiet          Silent mode."
+    echo "      -v of --verbose        Display the name of each files converted."
+    echo
+    echo "Example:"
+    echo "AAAAAAA"
+    echo
+}
+
+# date in format "2014:06:07 02:06:35" (exif)
+#syncTime ($refTime,$syncTime,$currentTime) {
+syncTime() {
+	refTime=$(echo $1 | sed 's/:/-/' | sed 's/:/-/') # convert to "2014-06-07 02:06:35"
+	syncTime=$(echo $2 | sed 's/:/-/' | sed 's/:/-/')
+	currentTime=$(echo $3 | sed 's/:/-/' | sed 's/:/-/')
+
+	# echo $refTime
+	# echo $syncTime
+	# echo $currentTime
+
+	refTimeTS=$(date --date "$refTime" +%s)
+	syncTimeTS=$(date --date "$syncTime" +%s)
+	currentTimeTS=$(date --date "$currentTime" +%s)
+
+	timeDiff=$(($syncTimeTS - $refTimeTS))
+	newTimeTS=$(($currentTimeTS - $timeDiff))
+	newTime=$(date --date "@$newTimeTS" +'%Y:%m:%d %H:%M:%S')
+
+	echo $newTime
+}
+
+# syncTime refTime syncTime currentTime
+# syncTime "2014:06:07 02:06:35" "2014:06:07 03:06:35" "2014:06:07 03:06:35"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h | --help )
+            usage
+            exit 0
+            ;;
+        -d | --dir)
+            dir_name=$2;
+            if [ "${dir_name}" != "" ]; then
+							shift 2
+            else
+                echo "-d requires an argument"
+                exit 1
+            fi
+            ;;
+        -p | --prefix)
+            prefix=$2;
+            if [ "${prefix}" != "" ]; then
+							shift 2
+            else
+                echo "-p requires an argument"
+                exit 1
+            fi
+            ;;
+        -s | --separator)
+            sep=$2;
+            if [ "${sep}" != "" ]; then
+							shift 2
+            else
+                echo "-s requires an argument"
+                exit 1
+            fi
+            ;;
+				-e | --extension)
+            ext=$2;
+            if [ "${ext}" != "" ]; then
+							shift 2
+            else
+                echo "-e requires an argument"
+                exit 1
+            fi
+            ;;
+        -i | --img)
+            img_types=$2;
+            if [ "${img_types}" != "" ]; then
+							shift 2
+            else
+                echo "-i requires an argument"
+                exit 1
+            fi
+            ;;
+       -r | --resize)
+            resize=$2;
+	   				resize_convert=$2;
+            if [ "${resize}" != "" ]; then
+						if [ "${resize}" = "720p" ]; then
+							resize_convert="1280x720"
+						fi
+						if [ "${resize}" = "1080p" ]; then
+							resize_convert="1920x1080"
+						fi
+						if [ "${resize}" = "2160p" ]; then
+							resize_convert="3840x2160"
+						fi
+						if [ "${resize,,}" = "4k" ]; then
+							resize_convert="3840x2160"
+						fi
+						if [ "${resize}" = "4320p" ]; then
+							resize_convert="7680x4320"
+						fi
+						if [ "${resize,,}" = "8k" ]; then
+							resize_convert="3840x4320"
+						fi
+						shift 2
+            else
+                echo "-r requires an argument"
+                exit 1
+            fi
+            ;;
+        -q | --quiet)
+					quiet=1;
+					shift
+            ;;
+        -v | --verbose)
+					verbose=1;
+					shift
+            ;;
+        -- ) # Stop option processing
+            shift
+            break
+            ;;
+        * )
+            break
+            ;;
+    esac
+done
+
+if [ "${dir_name}" = "" ]; then
+	dir_name=$dir_default
+        # usage
+        # exit 0
+fi
+if [ "${prefix}" = "" ]; then
+	prefix=$prefix_default
+fi
+if [ "${sep}" = "" ]; then
+  if [ "${prefix}" = "" ]; then
+        sep=""
+  else
+	sep=$sep_default
+  fi
+fi
+if [ "${img_types}" = "" ]; then
+	img_types=$img_types_default
+fi
+if [ "${ext}" = "" ]; then
+	ext=$ext_default
+fi
+
+if [ "${quiet}" != 1 ]; then
+    echo
+    echo "This is $name version $version."
+    echo
+    echo "Settings:"
+    echo "    directory of merging: '$dir_name'"
+    echo "    prefix: '$prefix'"
+    echo "    separator: '$sep'"
+    echo "    image extension pattern: '$img_types'"
+    echo "    resize: '$resize', '$resize_convert' will be performed"
+		echo "    extension: '$ext'"
+    echo
+    echo "Start processing..."
+		echo
+fi
+
+
+
+
+
+
+
+allFolders=$(find */ -type d | sed 's/\///' | sort) # retrieve all folder names
+
+if [ -d "$dir_name" ]; then
+  echo "    Folder '$dir_name' already exists. Please use a different folder name or remove the folder."
+  exit 1
+fi
+
+if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
+    echo "    Creating directory '$dir_name'"
+fi
+mkdir "$dir_name"
+
+
+
+
+
+
+
+refName="_ref.jpg"
+syncName="_sync.jpg"
+
+# ref
+if [ "${quiet}" != 1 ]; then
+  echo "Looking for $refName image:"
+fi
+
+# we keep only the first match
+refSearch=$(find */ -iname $refName | sort | awk 'NR==1{print $1}')
+
+if [ "${refSearch}" = "" ]; then
+	if [ "${quiet}" != 1 ]; then
+		echo "  Not found."
+		echo "  No synchronization between folders will be performed."
+		echo
+	fi
+else
+  refName=$(basename $refSearch)
+  refPath=$(dirname  $refSearch)
+	refTime=$(exif -t 0x9003 -m $refSearch)
+
+	if [ "${quiet}" != 1 ]; then
+		echo "  Found '$refName' in '$refPath'."
+		echo
+	fi
+	# sync
+	if [ "${quiet}" != 1 ]; then
+		echo "Looking for $syncName images:"
+	fi
+  for i in $allFolders ; do
+		if [ $i != $refPath ] && [ $i != $dir_name ]; then
+			if [ "${quiet}" != 1 ]; then
+				echo -n "  Folder '$i': "
+			fi
+			syncSearch=""
+			syncSearch=$(find "./$i/" -iname $syncName)
+			if [ "${syncSearch}" = "" ]; then
+				if [ "${quiet}" != 1 ]; then
+					echo "not found."
+				fi
+			else
+				syncName=$(basename $syncSearch)
+				if [ "${quiet}" != 1 ]; then
+					echo "found '$syncName'."
+				fi
+			fi
+		fi
+	done
+	echo
+fi
+
+
+
+for f in $allFolders ; do
+	echo "Processing folder '$f'"
+
+	syncTime=""
+	syncSearch=""
+	syncSearch=$(find "./$f/" -iname $syncName)
+	
+	if [ "${syncSearch}" != "" ]; then
+		syncTime=$(exif -t 0x9003 -m $syncSearch)
+	fi
+	# echo $syncTime
+
+	for i in $(ls -R $f | awk '
+	/:$/&&f{s=$0;f=0}
+	/:$/&&!f{sub(/:$/,"");s=$0;f=1;next}
+	NF&&f{ print s"/"$0 }' | grep -iP -e "$img_types"); do
+
+		if [ $(echo $i | grep -i $refName) ] ; then
+			# do nothing
+			echo -n
+		else 
+			if [ $(echo $i | grep -i $syncName) ] ; then
+				# do nothing
+				echo -n
+			else
+				#echo $i
+				photoTime=$(exif -t 0x9003 -m $i)
+				#echo $photoTime
+				if [ "${refSearch}" != "" ] && [ "${syncSearch}" != "" ]; then
+					#echo $refTime
+					#echo $syncTime
+					#echo $photoTime
+					photoTime=$(syncTime "$refTime" "$syncTime" "$photoTime")
+				fi
+				#echo $photoTime
+				photoTimeEsc=$(echo $photoTime | sed 's/ /-/g' )
+				photoName="$prefix$sep$photoTimeEsc-$f"
+
+				if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
+						echo "    Copy $i to $photoName.$ext"
+				fi
+				# echo cp $j "$photo_name.jpg" ;
+				# cp $i "$dir_name/$photoName.$ext" ;
+				a=$(exif --ifd='EXIF' -t 0x9003 --set-value="$photoTime" --output="$dir_name/$photoName.$ext" $i)
+
+
+				if [ "${resize}" != "" ]; then
+					if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
+						echo "    Resize $photoName.jpg to $resize"
+					fi
+					convert -resize "$resize_convert" "$dir_name/$photoName.$ext" "$dir_name/$photoName$sep$resize.$ext"
+				fi
+			fi
+		fi
+
+	done # photo
+done # folder
+
+
+
+
+if [ "${quiet}" != 1 ]; then
+    echo "Job completed."
+fi
