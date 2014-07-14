@@ -1,3 +1,12 @@
+beaver (0.2-0ubuntu1) trusty; urgency=low
+
+  * updated man page
+  * added -f option
+  * added --suffix option
+  * changed -s option to --suffix instead of --separator
+
+ -- Emmanuel Rousseaux <emmanuel.rousseaux@gmail.com>  Mon, 14 Jul 2014 19:19:59 +0200
+
 beaver (0.1-0ubuntu1) trusty; urgency=low
 
   * Initial release.

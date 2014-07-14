@@ -2,10 +2,10 @@
 .\"http://sourceforge.net/projects/gmanedit2
 
 .\"Replace <program> with the program name, x with the Section Number
-.TH  beaver 0.1 "2014.07.14" "" "User Commands"
+.TH  beaver 0.2 "2014.07.14" "" "User Commands"
 
 .SH NAME
-beaver \- program for pooling photos taken by different friends at a same event to have them chronologically ordered in your archive folder. To save space, resizing photos to a lower resolution is possible (720p, 1080p, 4K, 8K).
+beaver \- Rename photos and videos by shooting date. Synchronize and pool them when taken from different cameras.
 
 ..SH SYNOPSIS
 .B beaver
@@ -13,18 +13,44 @@ beaver \- program for pooling photos taken by different friends at a same event 
 .br
 
 .SH DESCRIPTION
-Forthcoming...
+This command-line utility allows to easily rename your photos (and videos) by shooting date.
+
+If your photos come from various sources (e.g. you used different cameras, or you want to pool friend's or colleague's photos with yours) you have to take care that cameras have to be synchronized to have your photos properly sorted. As it is usually not the case, this utility will help you to synchronized photos taken by non-synchronized cameras.
+
+You can also resize photos to standard sizes (720p, 1080p, 4K, etc.) to prepare them for archiving or make them lighter for sharing.
+
 
 .SH OPTIONS
-.IP \fB\-d\fP or \fB\--dir\fP
+.IP \fB\-d\fP or \fB\--directory\fP
 Specify the directory name where to export photo.
+.IP \fB\-e\fP or \fB\--extension\fP
+Extension to use for naming photos. Default is 'jpg'.
+.IP \fB\-f\fP or \fB\--force\fP
+If the directory where exporting photos already exists, it will be removed.
+.IP \fB\-h\fP or \fB\--help\fP
+Basic usage help.
+.IP \fB\-i\fP or \fB\--img\fP
+Specify a perl pattern to match image extensions. Default is '$img_types_default'.
 .IP \fB\-p\fP or \fB\--prefix\fP
-Specify a label to prefix photo names. If not set the folder name is used.
+Specify a label to use for prefixing photo names. If not set the folder name is used.
+.IP \fB\-q\fP or \fB\--quiet\fP
+Silent mode.
+.IP \fB\-r\fP or \fB\--resize\fP
+Resize photo to a given resolution, for example '1920x1080', or '1080p'.
+.IP \fB\-s\fP or \fB\--suffix\fP
+Specify a label to use for suffixing photo names. Default is '$suffix_default'.
+.IP \fB\-S\fP or \fB\--separator\fP
+Specify the separator to use between the prefix and the date in photo names. Default is '$sep_default'.
+.IP \fB\-v\fP or \fB\--verbose\fP
+Display the name of each files converted.
+
 
 .SH NOTES
 Currently the command doesn't accept spaces in names (directories and photos). Please remove all spaces in names before running the command.
 
 .SH EXAMPLE
-cd /amazingTripWithFriends
-beaver -p myNiceTrip -v
-beaver -p myNiceTrip -v -r 4K
+cd ~/Documents/amazingTripWithFriends
+
+beaver -p myAmazingTrip -v -f
+
+beaver -p myAmazingTrip -v -f -r 4K

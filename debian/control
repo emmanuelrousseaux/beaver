@@ -5,8 +5,7 @@ Maintainer: Emmanuel Rousseaux <emmanuel.rousseaux@gmail.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.4
 Homepage: <http://emmanuel.rousseaux.me/beaver>
-#Vcs-Git: git://git.debian.org/collab-maint/beaver.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/beaver.git;a=summary
+Vcs-Git: git://github.com/emmanuelr/beaver.git
 
 Package: beaver
 Architecture: all

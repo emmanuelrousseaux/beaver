@@ -5,13 +5,15 @@
 #FIXES
 # - subfolders cannot have spaces in name
 
-name="friends-photos-merge"
-version="0.0.2"
+name="beaver"
+version="0.2.0"
 dir_default="$name-export"
 prefix_default=""
+suffix_default="public"
 sep_default="-"
 img_types_default=".jpg$"
 ext_default='jpg'
+force=0
 quiet=0
 verbose=0
 resize=''
@@ -24,17 +26,22 @@ usage () {
     echo "This is $name version $version."
     echo
     echo "Usage:"
-    echo "      -d or --dir            Specify the directory name where to export photo."
-    echo "      -p or --prefix         Specify a label to prefix photo names. If not set the folder name is used."
-    echo "      -s or --separator      Specify the separator to use between the prefix and the date in photo names. Default is '$sep_default'."
-    echo "      -i or --img            Specify a perl pattern to match image extensions. Default is '$img_types_default'."
-    echo "      -r or --resize         Resize photo to a given resolution, for example '1920x1080'."
+    echo "      -d or --directory      Specify the directory name where to export photo."
 		echo "      -e or --extension      Extension to use for naming photos. Default is 'jpg'."
+    echo "      -f or --force          If the directory where exporting photos already exists, it will be removed."
+    echo "      -h or --help           Basic usage help."
+    echo "      -i or --img            Specify a perl pattern to match media extensions. Default is '$img_types_default'."
+    echo "      -p or --prefix         Specify a label to use for prefixing photo names. If not set the folder name is used."
     echo "      -q or --quiet          Silent mode."
+    echo "      -r or --resize         Resize photo to a given resolution, for example '1920x1080', or '1080p'."
+    echo "      -s or --suffix         Specify a label to use for suffixing photo names. Default is '$suffix_default'."
+    echo "      -S or --separator      Specify the separator to use between the prefix and the date in photo names. Default is '$sep_default'."
     echo "      -v of --verbose        Display the name of each files converted."
     echo
     echo "Example:"
-    echo "AAAAAAA"
+    echo "cd ~/Documents/amazingTripWithFriends"
+    echo "beaver -p myAmazingTrip -v -f"
+    echo "beaver -p myAmazingTrip -v -f -r 4K"
     echo
 }
 
@@ -69,7 +76,7 @@ while [ $# -gt 0 ]; do
             usage
             exit 0
             ;;
-        -d | --dir)
+        -d | --directory)
             dir_name=$2;
             if [ "${dir_name}" != "" ]; then
 							shift 2
@@ -87,12 +94,21 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             ;;
-        -s | --separator)
+        -s | --suffix)
+            suffix=$2;
+            if [ "${suffix}" != "" ]; then
+							shift 2
+            else
+                echo "-s requires an argument"
+                exit 1
+            fi
+            ;;
+        -S | --separator)
             sep=$2;
             if [ "${sep}" != "" ]; then
 							shift 2
             else
-                echo "-s requires an argument"
+                echo "-S requires an argument"
                 exit 1
             fi
             ;;
@@ -142,6 +158,10 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             ;;
+        -f | --quiet)
+					force=1;
+					shift
+            ;;
         -q | --quiet)
 					quiet=1;
 					shift
@@ -168,6 +188,9 @@ fi
 if [ "${prefix}" = "" ]; then
 	prefix=$prefix_default
 fi
+if [ "${suffix}" = "" ]; then
+	suffix=$suffix_default
+fi
 if [ "${sep}" = "" ]; then
   if [ "${prefix}" = "" ]; then
         sep=""
@@ -189,6 +212,7 @@ if [ "${quiet}" != 1 ]; then
     echo "Settings:"
     echo "    directory of merging: '$dir_name'"
     echo "    prefix: '$prefix'"
+    echo "    suffix: '$suffix'"
     echo "    separator: '$sep'"
     echo "    image extension pattern: '$img_types'"
     echo "    resize: '$resize', '$resize_convert' will be performed"
@@ -207,8 +231,14 @@ fi
 allFolders=$(find */ -type d | sed 's/\///' | sort) # retrieve all folder names
 
 if [ -d "$dir_name" ]; then
-  echo "    Folder '$dir_name' already exists. Please use a different folder name or remove the folder."
-  exit 1
+  echo "    Folder '$dir_name' already exists."
+  if [ "${force}" != 1 ]; then
+    echo "    Please use a different folder name, remove the folder, or use the '--force' option."
+    exit 1
+  else
+    echo "    Option '--force' selected, the folder will be removed."
+    rm -r $dir_name
+  fi
 fi
 
 if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
@@ -312,7 +342,7 @@ for f in $allFolders ; do
 				fi
 				#echo $photoTime
 				photoTimeEsc=$(echo $photoTime | sed 's/ /-/g' )
-				photoName="$prefix$sep$photoTimeEsc-$f"
+				photoName="$prefix$sep$photoTimeEsc$sep$f$sep$suffix"
 
 				if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
 						echo "    Copy $i to $photoName.$ext"
