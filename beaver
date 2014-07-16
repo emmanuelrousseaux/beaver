@@ -6,7 +6,7 @@
 # - subfolders cannot have spaces in name
 
 name="beaver"
-version="0.3.2"
+version="0.4.0"
 dir_default="$name-export"
 dir_original_default="original"
 prefix_default=""

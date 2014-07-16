@@ -1,3 +1,11 @@
+beaver (0.4-0ubuntu1) trusty; urgency=low
+
+  * format exif date to avoid the character ':' in photo names
+  * export original photos and resized photos in two separate folders
+  * fixed 8k resolution parameter
+
+ -- Emmanuel Rousseaux <emmanuel.rousseaux@gmail.com>  Wed, 16 Jul 2014 11:35:22 +0200
+
 beaver (0.3-0ubuntu1) trusty; urgency=low
 
   * now ask for user confirmation before processing photos
