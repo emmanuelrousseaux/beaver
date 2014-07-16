@@ -6,7 +6,7 @@
 # - subfolders cannot have spaces in name
 
 name="beaver"
-version="0.2.0"
+version="0.3.0"
 dir_default="$name-export"
 prefix_default=""
 suffix_default="public"
@@ -218,25 +218,32 @@ if [ "${quiet}" != 1 ]; then
     echo "    resize: '$resize', '$resize_convert' will be performed"
 		echo "    extension: '$ext'"
     echo
-    echo "Start processing..."
-		echo
 fi
 
 
 
-
+if [ "${force}" != 1 ]; then
+	while true; do
+		  read -p "Shall we start? [y/n] (Use '-f' option to avoid this message) " yn
+		  case $yn in
+		      [Yy]* ) echo "Start processing..."; break;;
+		      [Nn]* ) exit;;
+		      * ) echo "Please answer yes or no.";;
+		  esac
+	done
+fi
 
 
 
 allFolders=$(find */ -type d | sed 's/\///' | sort) # retrieve all folder names
 
 if [ -d "$dir_name" ]; then
-  echo "    Folder '$dir_name' already exists."
+  echo "Folder '$dir_name' already exists."
   if [ "${force}" != 1 ]; then
-    echo "    Please use a different folder name, remove the folder, or use the '--force' option."
+    echo "Please use a different folder name, remove the folder, or use the '--force' option."
     exit 1
   else
-    echo "    Option '--force' selected, the folder will be removed."
+    echo "Option '--force' selected, the folder will be removed."
     rm -r $dir_name
   fi
 fi
@@ -257,6 +264,7 @@ syncName="_sync.jpg"
 
 # ref
 if [ "${quiet}" != 1 ]; then
+  echo
   echo "Looking for $refName image:"
 fi
 
@@ -265,8 +273,8 @@ refSearch=$(find */ -iname $refName | sort | awk 'NR==1{print $1}')
 
 if [ "${refSearch}" = "" ]; then
 	if [ "${quiet}" != 1 ]; then
-		echo "  Not found."
-		echo "  No synchronization between folders will be performed."
+		echo "    Not found."
+		echo "    No synchronization between folders will be performed."
 		echo
 	fi
 else
@@ -275,7 +283,7 @@ else
 	refTime=$(exif -t 0x9003 -m $refSearch)
 
 	if [ "${quiet}" != 1 ]; then
-		echo "  Found '$refName' in '$refPath'."
+		echo "    Found '$refName' in '$refPath'."
 		echo
 	fi
 	# sync
@@ -285,7 +293,7 @@ else
   for i in $allFolders ; do
 		if [ $i != $refPath ] && [ $i != $dir_name ]; then
 			if [ "${quiet}" != 1 ]; then
-				echo -n "  Folder '$i': "
+				echo -n "    Folder '$i': "
 			fi
 			syncSearch=""
 			syncSearch=$(find "./$i/" -iname $syncName)

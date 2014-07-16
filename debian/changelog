@@ -1,3 +1,12 @@
+beaver (0.3-0ubuntu1) trusty; urgency=low
+
+  * now ask for user confirmation before processing photos
+  * enhanced console messages
+  * updated website url
+  * updated man page
+
+ -- Emmanuel Rousseaux <emmanuel.rousseaux@gmail.com>  Tue, 15 Jul 2014 16:59:47 +0200
+
 beaver (0.2-0ubuntu1) trusty; urgency=low
 
   * updated man page

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Emmanuel Rousseaux <emmanuel.rousseaux@gmail.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.4
-Homepage: <http://emmanuel.rousseaux.me/beaver>
+Homepage: http://emmanuel.rousseaux.me/debian-ubuntu#beaver
 Vcs-Git: git://github.com/emmanuelr/beaver.git
 
 Package: beaver
