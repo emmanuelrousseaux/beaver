@@ -6,11 +6,12 @@
 # - subfolders cannot have spaces in name
 
 name="beaver"
-version="0.3.0"
+version="0.3.1"
 dir_default="$name-export"
 prefix_default=""
 suffix_default="public"
 sep_default="-"
+sepdate_default="."
 img_types_default=".jpg$"
 ext_default='jpg'
 force=0
@@ -66,9 +67,15 @@ syncTime() {
 
 	echo $newTime
 }
-
 # syncTime refTime syncTime currentTime
 # syncTime "2014:06:07 02:06:35" "2014:06:07 03:06:35" "2014:06:07 03:06:35"
+
+# date in format "2014:06:07 02:06:35" (exif)
+# formatTime($time, $sepdate, $sep)
+# out: 2014$sepdate06$sepdate07$sep02$sepdate06$sepdate35. Default is "2014.06.07-02.06.35"
+formatTime() {
+  echo $(echo $1 | sed "s/:/$2/g" | sed "s/ /$3/g")
+}
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -185,25 +192,42 @@ if [ "${dir_name}" = "" ]; then
         # usage
         # exit 0
 fi
+
+if [ "${sep}" = "" ]; then
+  #if [ "${prefix}" = "" ]; then
+  #      sep=""
+  #else
+	sep=$sep_default
+  #fi
+fi
+if [ "${sepdate}" = "" ]; then
+  #if [ "${prefix}" = "" ]; then
+  #      sep=""
+  #else
+	sepdate=$sepdate_default
+  #fi
+fi
+
 if [ "${prefix}" = "" ]; then
 	prefix=$prefix_default
-fi
+fi;
+if [ "${prefix}" = "" ]; then
+  prefixsep=""
+else
+  prefixsep=$prefix$sep
+fi;
+
 if [ "${suffix}" = "" ]; then
 	suffix=$suffix_default
 fi
-if [ "${sep}" = "" ]; then
-  if [ "${prefix}" = "" ]; then
-        sep=""
-  else
-	sep=$sep_default
-  fi
-fi
+
 if [ "${img_types}" = "" ]; then
 	img_types=$img_types_default
 fi
 if [ "${ext}" = "" ]; then
 	ext=$ext_default
 fi
+
 
 if [ "${quiet}" != 1 ]; then
     echo
@@ -349,8 +373,8 @@ for f in $allFolders ; do
 					photoTime=$(syncTime "$refTime" "$syncTime" "$photoTime")
 				fi
 				#echo $photoTime
-				photoTimeEsc=$(echo $photoTime | sed 's/ /-/g' )
-				photoName="$prefix$sep$photoTimeEsc$sep$f$sep$suffix"
+				photoTimeEsc=$(formatTime "$photoTime" "$sepdate" "$sep")
+				photoName="$prefixsep$photoTimeEsc$sep$f$sep$suffix"
 
 				if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
 						echo "    Copy $i to $photoName.$ext"
