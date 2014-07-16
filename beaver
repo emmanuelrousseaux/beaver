@@ -6,7 +6,7 @@
 # - subfolders cannot have spaces in name
 
 name="beaver"
-version="0.3.1"
+version="0.3.2"
 dir_default="$name-export"
 dir_original_default="original"
 prefix_default=""
@@ -158,7 +158,7 @@ while [ $# -gt 0 ]; do
 							resize_convert="7680x4320"
 						fi
 						if [ "${resize,,}" = "8k" ]; then
-							resize_convert="3840x4320"
+							resize_convert="7680x4320"
 						fi
 						shift 2
             else
