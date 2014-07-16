@@ -8,6 +8,7 @@
 name="beaver"
 version="0.3.1"
 dir_default="$name-export"
+dir_original_default="original"
 prefix_default=""
 suffix_default="public"
 sep_default="-"
@@ -42,7 +43,7 @@ usage () {
     echo "Example:"
     echo "cd ~/Documents/amazingTripWithFriends"
     echo "beaver -p myAmazingTrip -v -f"
-    echo "beaver -p myAmazingTrip -v -f -r 4K"
+    echo "beaver -p myAmazingTrip -v -f -r 1080p"
     echo
 }
 
@@ -192,6 +193,9 @@ if [ "${dir_name}" = "" ]; then
         # usage
         # exit 0
 fi
+if [ "${dir_original}" = "" ]; then
+	dir_original=$dir_original_default
+fi
 
 if [ "${sep}" = "" ]; then
   #if [ "${prefix}" = "" ]; then
@@ -259,7 +263,7 @@ fi
 
 
 
-allFolders=$(find */ -type d | sed 's/\///' | sort) # retrieve all folder names
+allFolders=$(find */ -type d -not -path "*$dir_name*" | sed 's/\///' | sort) # retrieve all folder names
 
 if [ -d "$dir_name" ]; then
   echo "Folder '$dir_name' already exists."
@@ -275,10 +279,11 @@ fi
 if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
     echo "    Creating directory '$dir_name'"
 fi
-mkdir "$dir_name"
-
-
-
+mkdir $dir_name
+mkdir $dir_name/$dir_original
+if [ "${resize}" != "" ]; then
+	mkdir $dir_name/$resize
+fi
 
 
 
@@ -315,21 +320,19 @@ else
 		echo "Looking for $syncName images:"
 	fi
   for i in $allFolders ; do
-		if [ $i != $refPath ] && [ $i != $dir_name ]; then
+		if [ "${quiet}" != 1 ]; then
+			echo -n "    Folder '$i': "
+		fi
+		syncSearch=""
+		syncSearch=$(find "./$i/" -iname $syncName)
+		if [ "${syncSearch}" = "" ]; then
 			if [ "${quiet}" != 1 ]; then
-				echo -n "    Folder '$i': "
+				echo "not found."
 			fi
-			syncSearch=""
-			syncSearch=$(find "./$i/" -iname $syncName)
-			if [ "${syncSearch}" = "" ]; then
-				if [ "${quiet}" != 1 ]; then
-					echo "not found."
-				fi
-			else
-				syncName=$(basename $syncSearch)
-				if [ "${quiet}" != 1 ]; then
-					echo "found '$syncName'."
-				fi
+		else
+			syncName=$(basename $syncSearch)
+			if [ "${quiet}" != 1 ]; then
+				echo "found '$syncName'."
 			fi
 		fi
 	done
@@ -381,14 +384,14 @@ for f in $allFolders ; do
 				fi
 				# echo cp $j "$photo_name.jpg" ;
 				# cp $i "$dir_name/$photoName.$ext" ;
-				a=$(exif --ifd='EXIF' -t 0x9003 --set-value="$photoTime" --output="$dir_name/$photoName.$ext" $i)
+				a=$(exif --ifd='EXIF' -t 0x9003 --set-value="$photoTime" --output="$dir_name/$dir_original/$photoName.$ext" $i)
 
 
 				if [ "${resize}" != "" ]; then
 					if [ "${quiet}" != 1 ] && [ "${verbose}" = 1 ]; then
 						echo "    Resize $photoName.jpg to $resize"
 					fi
-					convert -resize "$resize_convert" "$dir_name/$photoName.$ext" "$dir_name/$photoName$sep$resize.$ext"
+					convert -resize "$resize_convert" "$dir_name/$dir_original/$photoName.$ext" "$dir_name/$resize/$photoName$sep$resize.$ext"
 				fi
 			fi
 		fi
